@@ -56,7 +56,10 @@ train_set_ratio = 0.8
 
 # Read CSV file
 # Please check the viral.csv for names of header
-with open("C:\CMUcourses\Capstone project\ViralVideoPrediction-master\\viral.csv","rb") as input_file:
+
+#file_path = "C:\CMUcourses\Capstone project\ViralVideoPrediction-master\\viral.csv"
+file_path = "viral.csv"
+with open(file_path,"rb") as input_file:
 	reader = csv.DictReader(input_file)
 	# Store data in a list with the DictReader
 	raw_data = []
@@ -79,6 +82,21 @@ with open("C:\CMUcourses\Capstone project\ViralVideoPrediction-master\\viral.csv
 				row.append(int(line[key]))
 			elif key in ['avg_rate']:
 				row.append(float(line[key]))
+
+        # Jinsub's Features
+
+        # 1) Title length vs. description length
+        if len(line['title']) < len(line['description']):
+            row.append(0)
+        else:
+            row.append(1)
+
+        # 2) Title contains numeric
+        if line['title'].isalpha():
+            row.append(0)
+        else:
+            row.append(1)
+        
 		feature.append(row)
 
 # Generate training set and testing set
