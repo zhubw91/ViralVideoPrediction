@@ -14,45 +14,45 @@ def SVM_predict(train_X, train_Y, test_X):
 	clf = svm.SVC(C=1.0,gamma=0.1)
 	clf.fit(train_X, train_Y)
 	result = clf.predict(test_X)
-	print "SVM Result:\n", result
-        return result
+	#print "SVM Result:\n", result
+	return result
 
 def NB_predict(train_X, train_Y, test_X):
 	clf = MultinomialNB()
 	clf.fit(train_X, train_Y)
 	result = clf.predict(test_X)
-	print "NB Result:\n", result
-        return result
+	#print "NB Result:\n", result
+	return result
 
 def RandomForest_predict(train_X, train_Y, test_X):
 	clf = RandomForestClassifier(n_estimators=10)
 	clf.fit(train_X, train_Y)
 	result = clf.predict(test_X)
-	print "Random Forest Result:\n",result
-        return result
+	#print "Random Forest Result:\n",result
+	return result
 
 #1 is standard, 2 is prediction
 def calMAP(dict1,dict2,classnum):
-    total=0
-    pre=0.0
-    for x in dict1:
-        total+=1
-        count=0
-        if dict2.has_key(x):
-            for y in dict1[x]:
-                for z in dict2[x]:
-                    if y==z:
-                        count+=1
-                        break
-        pre+=(float)(count*1.0/len(dict1[x])*1.0)
-    pre=pre/total*1.0
-    print pre
+	total=0
+	pre=0.0
+	for x in dict1:
+		total+=1
+		count=0
+		if dict2.has_key(x):
+			for y in dict1[x]:
+				for z in dict2[x]:
+					if y==z:
+						count+=1
+						break
+		pre+=(float)(count*1.0/len(dict1[x])*1.0)
+	pre=pre/total*1.0
+	print pre
 
 label = []
 feature = []
 # num of levels for view counts
 class_num = 10
-train_set_ratio = 0.8
+fold_num = 10
 
 # Read CSV file
 # Please check the viral.csv for names of header
@@ -83,80 +83,87 @@ with open(file_path,"rb") as input_file:
 			elif key in ['avg_rate']:
 				row.append(float(line[key]))
 
-        # Jinsub's Features
+		# Jinsub's Features
 
-        # 1) Title length vs. description length
-        if len(line['title']) < len(line['description']):
-            row.append(0)
-        else:
-            row.append(1)
+		# 1) Title length vs. description length
+		if len(line['video_title']) < len(line['video_desp']):
+			row.append(0)
+		else:
+			row.append(1)
 
-        # 2) Title contains numeric
-        if line['title'].isalpha():
-            row.append(0)
-        else:
-            row.append(1)
-        
+		# 2) Title contains numeric
+		if line['video_title'].isalpha():
+			row.append(0)
+		else:
+			row.append(1)
+		
 		feature.append(row)
 
 # Generate training set and testing set
+# With Cross Validation
 index_list = [x for x in range(len(label))]
 random.seed(23333)
 random.shuffle(index_list)
-train_size = int(train_set_ratio*len(label))
-train_x = [feature[index_list[i]] for i in range(train_size)]
-train_y = [label[index_list[i]] for i in range(train_size)]
-test_x = [feature[index_list[i]] for i in range(train_size,len(label))]
-test_y = [label[index_list[i]] for i in range(train_size,len(label))]
+test_size = int(len(label)/fold_num)
+for k in range(fold_num):
+	train_x = [feature[index_list[i]] for i in range(test_size*k)] + [feature[index_list[i]] for i in range(test_size*(k+1),len(label))]
+	train_y = [label[index_list[i]] for i in range(test_size*k)] + [label[index_list[i]] for i in range(test_size*(k+1),len(label))]
+	test_x = [feature[index_list[i]] for i in range(test_size*k,test_size*(k+1))]
+	test_y = [label[index_list[i]] for i in range(test_size*k,test_size*(k+1))]
 
-svm_res=SVM_predict(train_x, train_y, test_x)
-nb_res=NB_predict(train_x, train_y, test_x)
-rf_res=RandomForest_predict(train_x, train_y, test_x)
-svm_map={}
-for i in range(10):
-    for x in range(len(svm_res)):
-        if svm_res[x]==i:
-            if svm_map.has_key(i):
-                svm_map[i].append(x)
-            else:
-                svm_map[i]=[]
-                svm_map[i].append(x)
-print svm_map
+	svm_res=SVM_predict(train_x, train_y, test_x)
+	nb_res=NB_predict(train_x, train_y, test_x)
+	rf_res=RandomForest_predict(train_x, train_y, test_x)
+	svm_map={}
 
-nb_map={}
-for i in range(10):
-    for x in range(len(nb_res)):
-        if nb_res[x]==i:
-            if nb_map.has_key(i):
-                nb_map[i].append(x)
-            else:
-                nb_map[i]=[]
-                nb_map[i].append(x)
-print nb_map
+	print str(k) + "th test:"
+	for i in range(10):
+		for x in range(len(svm_res)):
+			if svm_res[x]==i:
+				if svm_map.has_key(i):
+					svm_map[i].append(x)
+				else:
+					svm_map[i]=[]
+					svm_map[i].append(x)
+	#print svm_map
 
-rf_map={}
-for i in range(10):
-    for x in range(len(rf_res)):
-        if rf_res[x]==i:
-            if rf_map.has_key(i):
-                rf_map[i].append(x)
-            else:
-                rf_map[i]=[]
-                rf_map[i].append(x)
-print rf_map
+	nb_map={}
+	for i in range(10):
+		for x in range(len(nb_res)):
+			if nb_res[x]==i:
+				if nb_map.has_key(i):
+					nb_map[i].append(x)
+				else:
+					nb_map[i]=[]
+					nb_map[i].append(x)
+	#print nb_map
 
-te_map={}
-for i in range(10):
-    for x in range(len(test_y)):
-        if test_y[x]==i:
-            if te_map.has_key(i):
-                te_map[i].append(x)
-            else:
-                te_map[i]=[]
-                te_map[i].append(x)
-print te_map
-print "True labels:\n",test_y
+	rf_map={}
+	for i in range(10):
+		for x in range(len(rf_res)):
+			if rf_res[x]==i:
+				if rf_map.has_key(i):
+					rf_map[i].append(x)
+				else:
+					rf_map[i]=[]
+					rf_map[i].append(x)
+	#print rf_map
 
-calMAP(te_map,rf_map,class_num)
-calMAP(svm_map,rf_map,class_num)
-calMAP(nb_map,rf_map,class_num)
+	te_map={}
+	for i in range(10):
+		for x in range(len(test_y)):
+			if test_y[x]==i:
+				if te_map.has_key(i):
+					te_map[i].append(x)
+				else:
+					te_map[i]=[]
+					te_map[i].append(x)
+	#print te_map
+	#print "True labels:\n",test_y
+
+	print "RF:"
+	calMAP(te_map,rf_map,class_num)
+	print "SVM:"
+	calMAP(te_map,svm_map,class_num)
+	print "NB:"
+	calMAP(te_map,nb_map,class_num)
