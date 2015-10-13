@@ -4,6 +4,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.ensemble import RandomForestClassifier
 import numpy
 import scipy
+from scipy.stats.stats import pearsonr
 import sklearn
 import csv
 import math
@@ -99,8 +100,15 @@ with open(file_path,"rb") as input_file:
 		
 		feature.append(row)
 
+#calculate PCC
+for i in range(len(feature[0])):
+    singleFeature = [x[i] for x in feature]
+    (pcc,pvalue) = pearsonr(singleFeature, label)
+    print 'PCC for ',i,' th Feature is ',pcc
+    print '2-Tailed P-Value for ',i,' th Feature is ',pvalue
 # Generate training set and testing set
 # With Cross Validation
+
 index_list = [x for x in range(len(label))]
 random.seed(23333)
 random.shuffle(index_list)
