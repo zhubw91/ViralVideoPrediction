@@ -72,7 +72,8 @@ with open(file_path,"rb") as input_file:
 	min_view_count, max_view_count = min(count_list), max(count_list)
 	view_count_interval = (math.log(max_view_count) - math.log(min_view_count)) / class_num
 	label = map(lambda x: int((math.log(x) - math.log(min_view_count)) / view_count_interval), count_list)
-
+	#map for tracking uploader
+	uploaderIds = {}
 	# generate feature vector
 	for line in raw_data:
 		row = []
@@ -97,15 +98,21 @@ with open(file_path,"rb") as input_file:
 			row.append(0)
 		else:
 			row.append(1)
-		
+		# uploader feature
+		if line['uploader_id'] in uploaderIds:
+			row.append(uploaderIds[line['uploader_id']])
+		else:
+			uploaderIds[line['uploader_id']] = len(uploaderIds)
+			row.append(uploaderIds[line['uploader_id']])
+
 		feature.append(row)
 
 #calculate PCC
 for i in range(len(feature[0])):
-    singleFeature = [x[i] for x in feature]
-    (pcc,pvalue) = pearsonr(singleFeature, label)
-    print 'PCC for ',i,' th Feature is ',pcc
-    print '2-Tailed P-Value for ',i,' th Feature is ',pvalue
+	singleFeature = [x[i] for x in feature]
+	(pcc,pvalue) = pearsonr(singleFeature, label)
+	print 'PCC for ',i,' th Feature is ',pcc
+	print '2-Tailed P-Value for ',i,' th Feature is ',pvalue
 # Generate training set and testing set
 # With Cross Validation
 
