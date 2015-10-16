@@ -9,6 +9,7 @@ import sklearn
 import csv
 import math
 import random
+from sets import Set
 
 # Train and Test
 def SVM_predict(train_X, train_Y, test_X):
@@ -49,6 +50,42 @@ def calMAP(dict1,dict2,classnum):
 	pre=pre/total*1.0
 	print pre
 
+def getStopWordList(filepath):
+	stopWords = Set([])
+	with open(filepath,'r') as stopWordFile:
+		for line in stopWordFile:
+			for word in line.split():
+				stopWords.add(word)
+	return stopWords
+
+
+def getTermIndxDict(row_data,stopWords):
+	termIndxMap = {}
+	#record all terms and its frequency in description
+	for line in raw_data:
+		for key in line:
+			if key in ['video_desp']:
+				descript = line['video_desp']
+				current_terms = Set([])
+				for term in descript.split():
+					if term not in current_terms:
+						current_terms.add(term)
+						if term not in stopWords:
+							if term in termIndxMap:
+								termIndxMap[term] += 1
+							else:
+								termIndxMap[term] = 1
+	#index terms with frequency >= 2
+	for key,value in termIndxMap.items():
+		if value == 1:
+			del termIndxMap[key]
+	indx = 0
+	for key,value in termIndxMap.iteritems():
+		termIndxMap[key] = indx
+		indx += 1
+	return termIndxMap
+
+
 label = []
 feature = []
 # num of levels for view counts
@@ -60,20 +97,26 @@ fold_num = 10
 
 #file_path = "C:\CMUcourses\Capstone project\ViralVideoPrediction-master\\viral.csv"
 file_path = "viral.csv"
+stop_words_file_path = "stop-words_english_3_en.txt"
+stopWords = getStopWordList(stop_words_file_path)
+
 with open(file_path,"rb") as input_file:
 	reader = csv.DictReader(input_file)
 	# Store data in a list with the DictReader
 	raw_data = []
 	for line in reader:
 		raw_data.append(line)
-
+	# get term index dictionary in description field
+	termIndxDict = getTermIndxDict(raw_data,stopWords)
+	#map for tracking uploader
+	uploaderIds = {}
 	# process the view count and generate lable list
 	count_list = map(lambda x: int(x["view_count"]), raw_data)
 	min_view_count, max_view_count = min(count_list), max(count_list)
 	view_count_interval = (math.log(max_view_count) - math.log(min_view_count)) / class_num
 	label = map(lambda x: int((math.log(x) - math.log(min_view_count)) / view_count_interval), count_list)
-	#map for tracking uploader
-	uploaderIds = {}
+	#list for tracking bag of words in description
+	descriptionsTerms = [0 for i in range(len(termIndxDict))]
 	# generate feature vector
 	for line in raw_data:
 		row = []
@@ -105,10 +148,16 @@ with open(file_path,"rb") as input_file:
 			uploaderIds[line['uploader_id']] = len(uploaderIds)
 			row.append(uploaderIds[line['uploader_id']])
 
+		descript = line['video_desp']
+		for term in descript.split():
+			if term in termIndxDict:
+				descriptionsTerms[termIndxDict[term]] += 1
+		row.extend(descriptionsTerms)
+
 		feature.append(row)
 
 #calculate PCC
-for i in range(len(feature[0])):
+for i in range(len(feature[0])-1):
 	singleFeature = [x[i] for x in feature]
 	(pcc,pvalue) = pearsonr(singleFeature, label)
 	print 'PCC for ',i,' th Feature is ',pcc
