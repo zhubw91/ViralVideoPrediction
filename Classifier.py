@@ -87,16 +87,16 @@ with open(file_path,"rb") as input_file:
 		# Jinsub's Features
 
 		# 1) Title length vs. description length
-		if len(line['video_title']) < len(line['video_desp']):
-			row.append(0)
-		else:
-			row.append(1)
+		#if len(line['video_title']) < len(line['video_desp']):
+		#	row.append(0)
+		#else:
+		#	row.append(1)
 
 		# 2) Title contains numeric
-		if line['video_title'].isalpha():
-			row.append(0)
-		else:
-			row.append(1)
+		#if line['video_title'].isalpha():
+		#	row.append(0)
+		#else:
+		#	row.append(1)
 		
 		feature.append(row)
 
