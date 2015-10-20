@@ -45,13 +45,14 @@ degree=[1,2,3,5]
 y_test=[]
 y_test=np.array(y_test)
 
-dir_path = 'C:\CMUcourses\Capstone project\insight_prased_txt\prased_txt'
+#dir_path = 'C:\CMUcourses\Capstone project\insight_prased_txt\prased_txt'
+dir_path = 'prased_txt'
 extension_list=['pattern']
 
 a=get_file_list(dir_path,extension_list)
 for file in a:
     x,y=get_train_array(file)
-    print file
+    #print file
     for d in degree:
         clf = Pipeline([('poly', PolynomialFeatures(degree=d)),  ('linear', LinearRegression(fit_intercept=False))])
         clf.fit(x, y)
