@@ -48,7 +48,7 @@ def calMAP(dict1,dict2,classnum):
 						break
 		pre+=(float)(count*1.0/len(dict1[x])*1.0)
 	pre=pre/total*1.0
-	print pre
+	return pre
 
 def getStopWordList(filepath):
 	stopWords = Set([])
@@ -131,29 +131,27 @@ with open(file_path,"rb") as input_file:
 		# Jinsub's Features
 
 		# 1) Title length vs. description length
-		#if len(line['video_title']) < len(line['video_desp']):
-		#	row.append(0)
-		#else:
-		#	row.append(1)
+		if len(line['video_title']) < len(line['video_desp']):
+			row.append(0)
+		else:
+			row.append(1)
 
 		# 2) Title contains numeric
-<<<<<<< HEAD
-		#if line['video_title'].isalpha():
-		#	row.append(0)
-		#else:
-		#	row.append(1)
-		
-=======
 		if line['video_title'].isalpha():
 			row.append(0)
 		else:
 			row.append(1)
-		# uploader feature
-		if line['uploader_id'] in uploaderIds:
-			row.append(uploaderIds[line['uploader_id']])
+		
+		if line['video_title'].isalpha():
+			row.append(0)
 		else:
-			uploaderIds[line['uploader_id']] = len(uploaderIds)
-			row.append(uploaderIds[line['uploader_id']])
+			row.append(1)
+		# # uploader feature
+		# if line['uploader_id'] in uploaderIds:
+		# 	row.append(uploaderIds[line['uploader_id']])
+		# else:
+		# 	uploaderIds[line['uploader_id']] = len(uploaderIds)
+		# 	row.append(uploaderIds[line['uploader_id']])
 
 		descript = line['video_desp']
 		for term in descript.split():
@@ -161,7 +159,6 @@ with open(file_path,"rb") as input_file:
 				descriptionsTerms[termIndxDict[term]] += 1
 		row.extend(descriptionsTerms)
 
->>>>>>> origin/master
 		feature.append(row)
 
 #calculate PCC
@@ -177,6 +174,9 @@ index_list = [x for x in range(len(label))]
 random.seed(23333)
 random.shuffle(index_list)
 test_size = int(len(label)/fold_num)
+result_svm = []
+result_rf = []
+result_nb = []
 for k in range(fold_num):
 	train_x = [feature[index_list[i]] for i in range(test_size*k)] + [feature[index_list[i]] for i in range(test_size*(k+1),len(label))]
 	train_y = [label[index_list[i]] for i in range(test_size*k)] + [label[index_list[i]] for i in range(test_size*(k+1),len(label))]
@@ -233,9 +233,9 @@ for k in range(fold_num):
 	#print te_map
 	#print "True labels:\n",test_y
 
-	print "RF:"
-	calMAP(te_map,rf_map,class_num)
-	print "SVM:"
-	calMAP(te_map,svm_map,class_num)
-	print "NB:"
-	calMAP(te_map,nb_map,class_num)
+	result_rf.append(calMAP(te_map,rf_map,class_num))
+	result_svm.append(calMAP(te_map,svm_map,class_num))
+	result_nb.append(calMAP(te_map,nb_map,class_num))
+print "RF:",sum(result_rf)/10
+print "SVM:",sum(result_svm)/10
+print "NB:",sum(result_nb)/10
