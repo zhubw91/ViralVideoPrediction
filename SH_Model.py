@@ -21,9 +21,8 @@ def get_file_list(dir_path,extension_list):
     file_list = []
     for extension in extension_list:
         extension = '*.' + extension
-        file_list += [os.path.realpath(e) for e in glob.glob(extension) ]
+        file_list += [os.path.realpath(e) for e in glob.glob(extension)]
     return file_list
-
 
 # Ti: indicator time
 # Tr: Reference time
@@ -54,8 +53,8 @@ def get_train_array(filename, ti, tr):
 dir_path = 'prased_txt'
 extension_list=['pattern']
 file_list=get_file_list(dir_path,extension_list)
-ti = 2
-tr = 10
+ti = 35
+tr = 40
 cnt = 0
 data_x_log = []
 data_y_log = []
@@ -67,15 +66,22 @@ for file in file_list:
     cnt += 1
 
     # Take Log or not
-    if x == 0:
+    if x <= 0:
         data_x_log.append([0])
     else:
         data_x_log.append([math.log(x)])
-    if y == 0:
+    if y <= 0:
         data_y_log.append(0)
     else:
         data_y_log.append(math.log(y))
     data_y.append(y)
+
+
+# Generate level lable
+class_num = 10
+min_view_count, max_view_count = max(min(data_y),0), max(max(data_y),0)
+view_count_interval = (math.log(max_view_count+1) - math.log(min_view_count+1)) / class_num
+label = map(lambda x: int((math.log(max(x,0)+1) - math.log(min_view_count+1)) / view_count_interval), data_y)
 
 # Cross Validation
 fold_num = 10
@@ -84,21 +90,27 @@ random.seed(23333)
 random.shuffle(index_list)
 test_size = int(len(data_y)/fold_num)
 
+result = []
 for k in range(fold_num):
     train_x = [data_x_log[index_list[i]] for i in range(test_size*k)] + [data_x_log[index_list[i]] for i in range(test_size*(k+1),len(data_x_log))]
     train_y = [data_y_log[index_list[i]] for i in range(test_size*k)] + [data_y_log[index_list[i]] for i in range(test_size*(k+1),len(data_x_log))]
     test_x = [data_x_log[index_list[i]] for i in range(test_size*k,test_size*(k+1))]
     test_y = [data_y[index_list[i]] for i in range(test_size*k,test_size*(k+1))]
+    test_label = [label[index_list[i]] for i in range(test_size*k,test_size*(k+1))]
     clf = LinearRegression()
     clf.fit(train_x,train_y)
     predict_y_log = clf.predict(test_x)
     predict_y = [math.e**i for i in predict_y_log]
     predict_y = np.array(predict_y)
     test_y = np.array(test_y)
-    print R22(predict_y,test_y)
+    predict_label = map(lambda x: int((math.log(x+1) - math.log(min_view_count+1)) / view_count_interval), predict_y)
+    predict_label = np.array(predict_label)
+
+    test_label = np.array(test_label)
+    result.append(rmse(predict_label,test_label))
     #for i in range(len(test_y)):
     #    print test_y[i],predict_y[i]
-
+print sum(result)/10
 
 
     
