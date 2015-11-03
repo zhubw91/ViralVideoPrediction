@@ -50,9 +50,6 @@ def get_train_array(filename, ti, tr):
             break     
     return x,y
 
-# dir_path = 'prased_txt'
-# extension_list=['pattern']
-# file_list=get_file_list(dir_path,extension_list)
 
 def performRegression(file_list):
     ti = 25
@@ -115,8 +112,10 @@ def performRegression(file_list):
     print sum(result)/10
 
 
-    
-
+dir_path = 'prased_txt'
+extension_list=['pattern']
+file_list=get_file_list(dir_path,extension_list)
+performRegression(file_list)
 
 
 
