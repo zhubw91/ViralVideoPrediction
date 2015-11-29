@@ -5,6 +5,8 @@ import random
 import glob,os
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import Ridge
+from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import PolynomialFeatures
 
 
@@ -96,7 +98,8 @@ def performRegression(file_list):
         test_x = [data_x_log[index_list[i]] for i in range(test_size*k,test_size*(k+1))]
         test_y = [data_y[index_list[i]] for i in range(test_size*k,test_size*(k+1))]
         test_label = [label[index_list[i]] for i in range(test_size*k,test_size*(k+1))]
-        clf = LinearRegression()
+        #clf = LinearRegression()
+        clf = LogisticRegression()
         clf.fit(train_x,train_y)
         predict_y_log = clf.predict(test_x)
         predict_y = [math.e**i for i in predict_y_log]
