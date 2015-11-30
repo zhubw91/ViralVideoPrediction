@@ -32,7 +32,7 @@ for key in data:
 		tmp = []
 		for index,num in enumerate(data[key]):
 			if index > 0:
-				tmp.append( str((int(data[key][index])+0.0)/int(data[key][index-1])) )
+				tmp.append( str((int(data[key][index])+0.0)/int(data[key][index-1]) - 1) )
 		output.write(','.join(tmp))
 		output.write('\n')
 
