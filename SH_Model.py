@@ -5,6 +5,8 @@ import random
 import glob,os
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import Ridge
+from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import PolynomialFeatures
 
 
@@ -50,9 +52,6 @@ def get_train_array(filename, ti, tr):
             break     
     return x,y
 
-# dir_path = 'prased_txt'
-# extension_list=['pattern']
-# file_list=get_file_list(dir_path,extension_list)
 
 def performRegression(file_list,day_range):
     ti = day_range - 5
@@ -99,7 +98,8 @@ def performRegression(file_list,day_range):
         test_x = [data_x_log[index_list[i]] for i in range(test_size*k,test_size*(k+1))]
         test_y = [data_y[index_list[i]] for i in range(test_size*k,test_size*(k+1))]
         test_label = [label[index_list[i]] for i in range(test_size*k,test_size*(k+1))]
-        clf = LinearRegression()
+        #clf = LinearRegression()
+        clf = LogisticRegression()
         clf.fit(train_x,train_y)
         predict_y_log = clf.predict(test_x)
         predict_y = [math.e**i for i in predict_y_log]
@@ -115,8 +115,10 @@ def performRegression(file_list,day_range):
     print sum(result)/10
 
 
-    
-
+dir_path = 'prased_txt'
+extension_list=['pattern']
+file_list=get_file_list(dir_path,extension_list)
+performRegression(file_list)
 
 
 
