@@ -54,9 +54,9 @@ def get_train_array(filename, ti, tr):
 # extension_list=['pattern']
 # file_list=get_file_list(dir_path,extension_list)
 
-def performRegression(file_list):
-    ti = 25
-    tr = 30
+def performRegression(file_list,day_range):
+    ti = day_range - 5
+    tr = day_range
     cnt = 0
     data_x_log = []
     data_y_log = []
