@@ -31,7 +31,7 @@ class TwitterSearchObject:
                     if queries > 0 and (queries % 5) == 0: # trigger delay every 5th query
                             time.sleep(60) # sleep for 60 seconds
 
-            tweetNum =  self.ts.search_tweets_iterable(self.tso,callback=my_callback_closure).get_statistics()[1]
+            tweetNum =  self.ts.search_tweets_iterable(self.tso,callback=my_callback_closure).get_amount_of_tweets()
 
             # for tweet in ts.search_tweets_iterable(tso):
             #     print( '@%s tweeted: %s' % ( tweet['user']['screen_name'], tweet['text'] ) )
