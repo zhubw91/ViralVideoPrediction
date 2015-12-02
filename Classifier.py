@@ -10,7 +10,6 @@ import csv
 import math
 import random
 from sets import Set
-from tweetsCrawler import TwitterSearchObject
 
 # Train and Test
 def SVM_predict(train_X, train_Y, test_X):
@@ -97,7 +96,7 @@ fold_num = 10
 # Please check the viral.csv for names of header
 
 #file_path = "C:\CMUcourses\Capstone project\ViralVideoPrediction-master\\viral.csv"
-file_path = "viral.csv"
+file_path = "viral_with_tweets_num.csv"
 stop_words_file_path = "stop-words_english_3_en.txt"
 stopWords = getStopWordList(stop_words_file_path)
 
@@ -116,8 +115,6 @@ with open(file_path,"rb") as input_file:
     min_view_count, max_view_count = min(count_list), max(count_list)
     view_count_interval = (math.log(max_view_count) - math.log(min_view_count)) / class_num
     label = map(lambda x: int((math.log(x) - math.log(min_view_count)) / view_count_interval), count_list)
-    #create twitter search object
-    twitterSearch = TwitterSearchObject()
     #list for tracking bag of words in description
     descriptionsTerms = [0 for i in range(len(termIndxDict))]
     # generate feature vector
@@ -157,10 +154,8 @@ with open(file_path,"rb") as input_file:
         # 	row.append(uploaderIds[line['uploader_id']])
 
         #tweets num feature
-        videoId = line['video_id']
-        tweetNum = twitterSearch.get_key_to_tweetsNum(videoId)
-        print videoId,'\t',tweetNum
-        row.append(tweetNum)
+        if 'tweets_num' in line:
+            row.append(line['tweets_num'])
 
         #bag of words description feature
         descript = line['video_desp']

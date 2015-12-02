@@ -1,5 +1,6 @@
 from TwitterSearch import *
 import time
+import csv
 
 class TwitterSearchObject:
     tso = None
@@ -40,4 +41,25 @@ class TwitterSearchObject:
             print(e)
         return tweetNum
 
+def write_to_file_with_tweets_num(input_file_path,output_file_path):
+    with open(input_file_path,"rb") as input_file:
+        with open(output_file_path,"w") as output_file:
+            reader = csv.DictReader(input_file) #read in file
+            twitterSearch = TwitterSearchObject() #create twitter search object
 
+            fieldnames = reader.fieldnames #specify output csv fields
+            fieldnames.append('tweets_num')
+            writer = csv.DictWriter(output_file, fieldnames=fieldnames)#create ouput csv writer
+            writer.writeheader()
+
+            for line in reader:
+                videoId = line['video_id']
+                tweetNum = twitterSearch.get_key_to_tweetsNum(videoId)#get tweets num feature
+                print videoId,'\t',tweetNum
+
+                line['tweets_num'] = tweetNum
+                writer.writerow(line)
+
+input_file_path = "viral.csv"
+output_file_path = "viral_with_tweets_num.csv"
+write_to_file_with_tweets_num(input_file_path,output_file_path)
