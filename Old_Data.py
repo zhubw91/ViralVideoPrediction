@@ -98,5 +98,5 @@ dir_path = 'prased_txt'
 extension_list=['pattern']
 cluster_list = get_cluster_list('video1IndexMap.txt')
 file_list=get_file_list(dir_path,extension_list)
-generate_data(file_list,'4', cluster_list)
+generate_data(file_list,'all', cluster_list)
 
