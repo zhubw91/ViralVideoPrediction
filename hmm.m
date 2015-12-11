@@ -1,34 +1,73 @@
-load traindata2.csv;
-level_num = 9;
-max_cnt = max(max(traindata2));
-min_cnt = min(min(traindata2));
-delta = (log(max_cnt) - log(min_cnt))/level_num;
-data = fix(log(traindata2)./delta);
-trainset = data(1:400,:);
-testset = data(401:472,:);
-trans = [0.5,0.5;
-      0.5,0.5];
-emis = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
-   0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1];
+function avg_map = hmm(x)
+load traindata_old_all.csv;
+load realdata_all.csv;
+traindata_old = traindata_old_all;
+realdata = realdata_all;
 
-[estTR,estE] = hmmtrain(trainset,trans,emis);
-cnt = 0;
-correct = 0;
-for i = 1:72
-    pstate = hmmdecode(testset(i,1:4),estTR,estE);
-    if(isnan(pstate(1,4)))
-        continue;
+train_size = floor(size(traindata_old,1)/10 * 8);
+test_size = size(traindata_old,1) - train_size - 1;
+date_size = 19;
+date_train_size = date_size-1;
+data_origin = traindata_old + 1;
+state_num = x;
+ob_state_num = 11;
+
+k = 10;
+map_result = zeros(k,4);
+% Cross Validation
+for t=1:k
+
+    data = data_origin(randperm(size(data_origin,1)),:);
+    trainset = data(1:train_size,1:date_train_size);
+    testset = data(train_size+1:train_size+test_size,:);
+
+    trans = ones(state_num,state_num);
+    for i=1:state_num
+        for j=1:state_num
+            if j < i
+                trans(i,j) = 1.5-0.1*(i-j);
+            elseif j > i
+                trans(i,j) = 1.5-0.1*(j-i);
+            end 
+        end
+    end 
+    trans = trans./(sum(trans,2)*ones(1,state_num));
+    emis = ones(state_num,ob_state_num)./ob_state_num;
+
+    [estTR,estE] = hmmtrain(trainset,trans,emis);
+
+    cnt = 0;
+    correct = 0;
+    test_real = realdata(train_size+1:train_size+test_size,:);
+    result = zeros(1,test_size);
+    for i = 1:test_size
+        pstate = hmmviterbi(testset(i,1:date_train_size),estTR,estE);
+        current_state = pstate(date_train_size);
+        [pre_max,pre_state] = max(estTR(current_state,:));
+        [pre_max,index] = max(estE(pre_state,:));
+        result(i) = index;
+        if(index == testset(i,date_size))
+            correct = correct + 1;
+        end
+        cnt = cnt + 1;   
     end
-    [m,index] = max(estTR(round(pstate(1,4)),:));
-    [m,index] = max(estE(index,:));
-    if(index == testset(i,5))
-        correct = correct + 1;
+
+    standard = ones(1,test_size);
+    pre = ones(1,test_size);
+    for i = 1:test_size
+        standard(i) = test_real(i,date_size) - test_real(i,date_size-1);
+        % pre(i) = 0;
+        % pre(i) = test_real(i,date_size-1) - test_real(i,date_size-2);
+        pre(i) = floor(test_real(i,date_train_size) * (1+(exp(result(i)*log(100) / 10) /100))) - test_real(i,date_size-1);
     end
-    cnt = cnt + 1;   
+
+    map_result(t,1) = map(standard, pre, 1);
+    map_result(t,2) = map(standard, pre, 5);
+    map_result(t,3) = map(standard, pre, 10);
+    map_result(t,4) = map(standard, pre, 20);
+
 end
 
-display correct,cnt
-
-
+avg_map = mean(map_result,1);
 
 
