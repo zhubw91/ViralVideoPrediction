@@ -29,6 +29,8 @@ for t=1:k
                 trans(i,j) = 1.5-0.1*(i-j);
             elseif j > i
                 trans(i,j) = 1.5-0.1*(j-i);
+            else
+                trans(i,j) = 1.5;
             end 
         end
     end 
