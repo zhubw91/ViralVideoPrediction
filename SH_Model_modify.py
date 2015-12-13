@@ -93,7 +93,6 @@ def get_train_array(filename, ti, tr, low, high):
         i += 1 
     return x,y
 
-
 def performRegression(file_name, ti):
     data_x_log = []
     data_y_log = []

@@ -2,22 +2,23 @@ function avg_map = hmm(x)
 load traindata_old_all.csv;
 load realdata_all.csv;
 traindata_old = traindata_old_all;
-realdata = realdata_all;
+realdata_origin = realdata_all;
 
-train_size = floor(size(traindata_old,1)/10 * 8);
+train_size = floor(size(traindata_old,1)/10 * 9);
 test_size = size(traindata_old,1) - train_size - 1;
-date_size = 19;
+date_size = 16;
 date_train_size = date_size-1;
 data_origin = traindata_old + 1;
 state_num = x;
 ob_state_num = 11;
 
-k = 10;
+k = 5;
 map_result = zeros(k,4);
 % Cross Validation
 for t=1:k
-
-    data = data_origin(randperm(size(data_origin,1)),:);
+    q = randperm(size(data_origin,1));
+    data = data_origin(q,:);
+    realdata = realdata_origin(q,:);
     trainset = data(1:train_size,1:date_train_size);
     testset = data(train_size+1:train_size+test_size,:);
 
@@ -55,12 +56,15 @@ for t=1:k
     standard = ones(1,test_size);
     pre = ones(1,test_size);
     for i = 1:test_size
-        standard(i) = test_real(i,date_size) - test_real(i,date_size-1);
+        % standard(i) = test_real(i,date_size+1);
+        standard(i) = test_real(i,date_size+1) - test_real(i,date_size);
         % pre(i) = 0;
         % pre(i) = test_real(i,date_size-1) - test_real(i,date_size-2);
-        pre(i) = floor(test_real(i,date_train_size) * (1+(exp(result(i)*log(100) / 10) /100))) - test_real(i,date_size-1);
+        pre(i) = floor(test_real(i,date_size) * (1+(exp(result(i)*(log(100)-1) / 10) /100))) - test_real(i,date_size);
+        % pre(i) = floor(test_real(i,date_size) * (1+(exp(result(i)*log(20) / 10) /100)));
     end
-
+    standard
+    pre
     map_result(t,1) = map(standard, pre, 1);
     map_result(t,2) = map(standard, pre, 5);
     map_result(t,3) = map(standard, pre, 10);
@@ -69,5 +73,6 @@ for t=1:k
 end
 
 avg_map = mean(map_result,1);
-
+estTR
+estE
 
