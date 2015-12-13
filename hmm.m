@@ -34,7 +34,7 @@ for t=1:k
     end 
     trans = trans./(sum(trans,2)*ones(1,state_num));
     emis = ones(state_num,ob_state_num)./ob_state_num;
-
+    trans
     [estTR,estE] = hmmtrain(trainset,trans,emis);
 
     cnt = 0;
