@@ -116,10 +116,10 @@ def performRegression(file_list,day_range):
     print sum(result)/10
 
 
-dir_path = 'prased_txt'
-extension_list=['pattern']
-file_list=get_file_list(dir_path,extension_list)
-performRegression(file_list)
+# dir_path = 'prased_txt'
+# extension_list=['pattern']
+# file_list=get_file_list(dir_path,extension_list)
+# performRegression(file_list,30)
 
 
 
