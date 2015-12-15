@@ -48,6 +48,7 @@ y_test=np.array(y_test)
 #dir_path = 'C:\CMUcourses\Capstone project\insight_prased_txt\prased_txt'
 dir_path = 'prased_txt'
 extension_list=['pattern']
+cluster_list = get_cluster_list('video1IndexMap.txt')
 
 a=get_file_list(dir_path,extension_list)
 for file in a:

@@ -86,98 +86,100 @@ def getTermIndxDict(row_data,stopWords):
     return termIndxMap
 
 
-label = []
-feature = []
 # num of levels for view counts
-class_num = 10
+class_num = 2
 fold_num = 10
 
 # Read CSV file
 # Please check the viral.csv for names of header
 
-#file_path = "C:\CMUcourses\Capstone project\ViralVideoPrediction-master\\viral.csv"
-file_path = "viral.csv"
+file_path = ["newmetadata","backgroundmeta"]
+
 stop_words_file_path = "stop-words_english_3_en.txt"
 stopWords = getStopWordList(stop_words_file_path)
 
-with open(file_path,"rb") as input_file:
-    reader = csv.DictReader(input_file)
-    # Store data in a list with the DictReader
-    raw_data = []
-    for line in reader:
-        raw_data.append(line)
-    # get term index dictionary in description field
-    termIndxDict = getTermIndxDict(raw_data,stopWords)
-    #map for tracking uploader
-    uploaderIds = {}
-    # process the view count and generate lable list
-    count_list = map(lambda x: int(x["view_count"]), raw_data)
-    min_view_count, max_view_count = min(count_list), max(count_list)
-    view_count_interval = (math.log(max_view_count) - math.log(min_view_count)) / class_num
-    label = map(lambda x: int((math.log(x) - math.log(min_view_count)) / view_count_interval), count_list)
-    #list for tracking bag of words in description
-    descriptionsTerms = [0 for i in range(len(termIndxDict))]
-    # generate feature vector
-    for line in raw_data:
-        row = []
-        for key in line:
-            #print key
-            if key in ['duration','num_raters','num_dislikes','num_likes']:
+label = []
+feature = []
+
+raw_data = []
+for file_num in range(2):
+
+    with open(file_path[file_num],"rb") as input_file:
+        
+        reader = csv.DictReader(input_file)
+        # Store data in a list with the DictReader
+        for line in reader:
+            raw_data.append(line)
+
+# get term index dictionary in description field
+termIndxDict = getTermIndxDict(raw_data,stopWords)
+
+for file_num in range(2):
+
+    with open(file_path[file_num],"rb") as input_file:
+        reader = csv.DictReader(input_file)
+        # Store data in a list with the DictReader
+        raw_data = []
+        for line in reader:
+            raw_data.append(line)
+        
+        #map for tracking uploader
+        uploaderIds = {}
+       
+        label.extend([file_num for x in range(len(raw_data))])
+        #list for tracking bag of words in description
+        descriptionsTerms = [0 for i in range(len(termIndxDict))]
+        # generate feature vector
+        for line in raw_data:
+            row = []
+            for key in line:
                 #print key
-                row.append(int(line[key]))
-            elif key in ['avg_rate']:
-                row.append(float(line[key]))
+                if key in ['duration','num_raters','num_dislikes','num_likes']:
+                    #print key
+                    row.append(int(line[key]))
+                elif key in ['avg_rate']:
+                    row.append(float(line[key]))
 
-        # Jinsub's Features
+            # Jinsub's Features
 
-        # 1) Title length vs. description length
-        if len(line['video_title']) < len(line['video_desp']):
-            row.append(0)
-        else:
-            row.append(1)
+            # 1) Title length vs. description length
+            if len(line['video_title']) < len(line['video_desp']):
+                row.append(0)
+            else:
+                row.append(1)
 
-        # 2) Title contains numeric
-        if line['video_title'].isalpha():
-            row.append(0)
-        else:
-            row.append(1)
+            # 2) Title contains numeric
+            if line['video_title'].isalpha():
+                row.append(0)
+            else:
+                row.append(1)
 
-        if line['video_title'].isalpha():
-            row.append(0)
-        else:
-            row.append(1)
-        # # uploader feature
-        # if line['uploader_id'] in uploaderIds:
-        # 	row.append(uploaderIds[line['uploader_id']])
-        # else:
-        # 	uploaderIds[line['uploader_id']] = len(uploaderIds)
-        # 	row.append(uploaderIds[line['uploader_id']])
+            if line['video_title'].isalpha():
+                row.append(0)
+            else:
+                row.append(1)
+            # # uploader feature
+            if line['uploader_id'] in uploaderIds:
+            	row.append(uploaderIds[line['uploader_id']])
+            else:
+            	uploaderIds[line['uploader_id']] = len(uploaderIds)
+            	row.append(uploaderIds[line['uploader_id']])
 
-        #tweets num feature
-        if 'tweets_num' in line:
-            row.append(line['tweets_num'])
-
-        #bag of words description feature
-        descript = line['video_desp']
-        for term in descript.split():
-            if term in termIndxDict:
-                descriptionsTerms[termIndxDict[term]] += 1
-        row.extend(descriptionsTerms)
+            #bag of words description feature
+            descript = line['video_desp']
+            for term in descript.split():
+                if term in termIndxDict:
+                    descriptionsTerms[termIndxDict[term]] += 1
+            row.extend(descriptionsTerms)
+            feature.append(row)
 
 
-        feature.append(row)
-
-#calculate PCC
-for i in range(len(feature[0])-1):
-    singleFeature = [x[i] for x in feature]
-    (pcc,pvalue) = pearsonr(singleFeature, label)
-    print 'PCC for ',i,' th Feature is ',pcc
-    print '2-Tailed P-Value for ',i,' th Feature is ',pvalue
 # Generate training set and testing set
 # With Cross Validation
 
 index_list = [x for x in range(len(label))]
-random.seed(23333)
+
+random.seed(23)
 random.shuffle(index_list)
 test_size = int(len(label)/fold_num)
 result_svm = []
@@ -189,13 +191,13 @@ for k in range(fold_num):
     test_x = [feature[index_list[i]] for i in range(test_size*k,test_size*(k+1))]
     test_y = [label[index_list[i]] for i in range(test_size*k,test_size*(k+1))]
 
-    print train_x
     svm_res=SVM_predict(train_x, train_y, test_x)
     nb_res=NB_predict(train_x, train_y, test_x)
     rf_res=RandomForest_predict(train_x, train_y, test_x)
     svm_map={}
 
     print str(k) + "th test:"
+    print nb_res
     for i in range(10):
         for x in range(len(svm_res)):
             if svm_res[x]==i:
