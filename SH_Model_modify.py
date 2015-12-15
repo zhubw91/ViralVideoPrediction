@@ -14,8 +14,8 @@ def rmse(y_test,y):
     return sp.sqrt(sp.mean((y_test-y)**2))
 
 def cal_map(list1, list2, n):
-    a = [i[0] for i in sorted(enumerate(list1), key=lambda x:x[1])]
-    b = [i[0] for i in sorted(enumerate(list2), key=lambda x:x[1])]
+    a = [i[0] for i in sorted(enumerate(list1), key=lambda x:x[1], reverse=True)]
+    b = [i[0] for i in sorted(enumerate(list2), key=lambda x:x[1], reverse=True)]
     result = 0
     for i in range(n):
         tmp = 0
@@ -152,7 +152,7 @@ def performRegression(file_name, ti):
     print sum(result10)/10
     print sum(result20)/10
 
-performRegression("realdata_all.csv",12)
+performRegression("realdata_all.csv",0)
 
 
 
