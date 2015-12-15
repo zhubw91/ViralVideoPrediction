@@ -1,8 +1,8 @@
 function avg_map = hmm(x)
-load traindata_new.csv;
-load realdata_new.csv;
-traindata_old = traindata_new;
-realdata_origin = realdata_new;
+load traindata_old_all.csv;
+load realdata_all.csv;
+traindata_old = traindata_old_all;
+realdata_origin = realdata_all;
 
 train_size = floor(size(traindata_old,1)/10 * 9);
 test_size = size(traindata_old,1) - train_size - 1;
