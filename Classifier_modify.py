@@ -93,7 +93,7 @@ fold_num = 10
 # Read CSV file
 # Please check the viral.csv for names of header
 
-file_path = ["viral.csv","quality.csv"]
+file_path = ["newmetadata","backgroundmeta"]
 
 stop_words_file_path = "stop-words_english_3_en.txt"
 stopWords = getStopWordList(stop_words_file_path)
@@ -105,6 +105,7 @@ raw_data = []
 for file_num in range(2):
 
     with open(file_path[file_num],"rb") as input_file:
+        
         reader = csv.DictReader(input_file)
         # Store data in a list with the DictReader
         for line in reader:
